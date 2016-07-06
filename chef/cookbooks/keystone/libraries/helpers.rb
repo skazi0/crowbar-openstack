@@ -72,6 +72,7 @@ module KeystoneHelper
         "admin_password" => node["keystone"]["admin"]["password"],
         "default_tenant" => node["keystone"]["default"]["tenant"],
         "default_tenant_id" => node["keystone"]["default"]["tenant_id"],
+        "default_create_user" => node["keystone"]["default"]["create_user"],
         "default_user" => node["keystone"]["default"]["username"],
         "default_password" => node["keystone"]["default"]["password"],
         "service_tenant" => node["keystone"]["service"]["tenant"],
