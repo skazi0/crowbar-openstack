@@ -257,6 +257,29 @@ else
   bind_port_xvpvncproxy = node[:nova][:ports][:xvpvncproxy]
 end
 
+ironic_servers = search(:node, "roles:ironic-server") || []
+if !ironic_servers.empty? && node["roles"].include?("nova-compute-ironic")
+  use_baremetal_filters = true
+  track_instance_changes = false
+  override_force_config_drive = true
+  ironic_node = ironic_servers.first
+  ironic_settings = {}
+  ironic_settings[:keystone_version] = "v2.0"
+  ironic_settings[:api_protocol] = ironic_node[:ironic][:api][:protocol]
+  ironic_settings[:api_port] = ironic_node[:ironic][:api][:port]
+  ironic_settings[:service_user] = ironic_node[:ironic][:service_user]
+  ironic_settings[:service_password] = ironic_node[:ironic][:service_password]
+  ironic_settings[:public_host] = CrowbarHelper.get_host_for_public_url(
+    ironic_node,
+    ironic_settings[:api_protocol] == "https"
+  )
+else
+  use_baremetal_filters = false
+  track_instance_changes = true
+  override_force_config_drive = false
+  ironic_settings = nil
+end
+
 vendordata_jsonfile = "/etc/nova/suse-vendor-data.json"
 
 template vendordata_jsonfile do
@@ -292,7 +315,7 @@ template "/etc/nova/nova.conf" do
             libvirt_migration: node[:nova]["use_migration"],
             libvirt_enable_multipath: node[:nova][:libvirt_use_multipath],
             shared_instances: node[:nova]["use_shared_instance_storage"],
-            force_config_drive: node[:nova]["force_config_drive"],
+            force_config_drive: override_force_config_drive || node[:nova]["force_config_drive"],
             glance_server_protocol: glance_server_protocol,
             glance_server_host: glance_server_host,
             glance_server_port: glance_server_port,
@@ -324,7 +347,10 @@ template "/etc/nova/nova.conf" do
             ssl_ca_file: api_ssl_cafile,
             oat_appraiser_host: oat_server[:hostname],
             oat_appraiser_port: "8443",
-            has_itxt: has_itxt
+            has_itxt: has_itxt,
+            use_baremetal_filters: use_baremetal_filters,
+            track_instance_changes: track_instance_changes,
+            ironic_settings: ironic_settings
             )
 end
 
