@@ -43,6 +43,8 @@ module NeutronHelper
     networks.each do |net, values|
       if values["interface"] == fixed_interface
         physmap[net] = fixed_physnet
+      elsif net == "ironic"
+        physmap[net] = "physnet2"
       elsif net == "nova_floating"
         physmap[net] = "floating"
       else

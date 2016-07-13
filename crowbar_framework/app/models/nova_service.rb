@@ -94,6 +94,14 @@ class NovaService < PacemakerServiceObject
             "suse" => ">= 12.1",
           },
           "remotes" => true
+        },
+        "nova-compute-ironic" => {
+          "unique" => false,
+          "count" => 1,
+          "platform" => {
+            "suse" => ">= 12.1",
+          },
+          "remotes" => false
         }
       }
     end
@@ -307,6 +315,15 @@ class NovaService < PacemakerServiceObject
                                               neutron["attributes"]["neutron"]["use_dvr"])
     end unless all_nodes.nil?
 
+    _, ironic_nodes, = role_expand_elements(role, "nova-compute-ironic")
+    ironic_nodes.each do |n|
+      net_svc.allocate_ip "default", "ironic", "admin", n
+      # (re)enable bridge for ironic network
+      node = NodeObject.find_node_by_name n
+      node.crowbar["crowbar"]["network"]["ironic"]["add_ovs_bridge"] = true
+      node.save
+    end
+
     @logger.debug("Nova apply_role_pre_chef_call: leaving")
   end
 
@@ -364,6 +381,9 @@ class NovaService < PacemakerServiceObject
         arch: node["kernel"]["machine"]
       )
     end unless elements["nova-compute-xen"].nil?
+    elements["nova-compute-ironic"].each do |n|
+      nodes[n] += 1
+    end unless elements["nova-compute-ironic"].nil?
 
     nodes.each do |key, value|
       if value > 1

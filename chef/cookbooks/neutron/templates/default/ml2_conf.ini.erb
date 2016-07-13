@@ -81,9 +81,7 @@ flat_networks = <%= @external_networks.join(",") %>
 #
 # network_vlan_ranges =
 # Example: network_vlan_ranges = physnet1:1000:2999,physnet2
-<% if @ml2_type_drivers.include?("vlan") -%>
-network_vlan_ranges = physnet1:<%= @vlan_start %>:<%= @vlan_end %>
-<% end -%>
+network_vlan_ranges = <%= @network_vlan_ranges %>
 
 [ml2_type_gre]
 # (ListOpt) Comma-separated list of <tun_min>:<tun_max> tuples enumerating ranges of GRE tunnel IDs that are available for tenant network allocation
