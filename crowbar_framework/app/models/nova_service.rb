@@ -94,6 +94,14 @@ class NovaService < PacemakerServiceObject
             "suse" => ">= 12.1",
           },
           "remotes" => true
+        },
+        "nova-compute-ironic" => {
+          "unique" => false,
+          "count" => 1,
+          "platform" => {
+            "suse" => ">= 12.1",
+          },
+          "remotes" => false
         }
       }
     end
@@ -364,6 +372,9 @@ class NovaService < PacemakerServiceObject
         arch: node["kernel"]["machine"]
       )
     end unless elements["nova-compute-xen"].nil?
+    elements["nova-compute-ironic"].each do |n|
+      nodes[n] += 1
+    end unless elements["nova-compute-ironic"].nil?
 
     nodes.each do |key, value|
       if value > 1
