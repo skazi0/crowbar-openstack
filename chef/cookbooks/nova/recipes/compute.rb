@@ -227,6 +227,9 @@ case node[:nova][:libvirt_type]
       action :delete
     end
 
+  when "ironic"
+    package "python-ironicclient"
+
 end
 
 nova_package "compute" do

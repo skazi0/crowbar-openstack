@@ -1206,6 +1206,9 @@ disk_allocation_ratio = <%= node[:nova][:scheduler][:disk_allocation_ratio] %>
 # Determines if the Scheduler tracks changes to instances to help with its
 # filtering decisions. (boolean value)
 #scheduler_tracks_instance_changes = true
+<% unless @track_instance_changes %>
+scheduler_tracks_instance_changes = false
+<% end -%>
 
 # Which filter class names to use for filtering baremetal hosts when not
 # specified in the request. (list value)
@@ -1214,6 +1217,9 @@ disk_allocation_ratio = <%= node[:nova][:scheduler][:disk_allocation_ratio] %>
 # Flag to decide whether to use baremetal_scheduler_default_filters or not.
 # (boolean value)
 #scheduler_use_baremetal_filters = false
+<% if @use_baremetal_filters %>
+scheduler_use_baremetal_filters = true
+<% end -%>
 
 # Default driver to use for the scheduler (string value)
 #scheduler_driver = nova.scheduler.filter_scheduler.FilterScheduler
@@ -1286,6 +1292,8 @@ compute_driver = vmwareapi.VMwareVCDriver
 compute_driver = novadocker.virt.docker.DockerDriver
 <% elsif @libvirt_type.eql?('zvm') -%>
 compute_driver = nova.virt.zvm.ZVMDriver
+<% elsif @libvirt_type.eql?('ironic') -%>
+compute_driver = ironic.IronicDriver
 <% else -%>
 compute_driver = libvirt.LibvirtDriver
 <% end -%>
@@ -2325,12 +2333,21 @@ protocol = <%= @glance_server_protocol %>
 
 # URL for Ironic API endpoint. (string value)
 #api_endpoint = <None>
+<% unless @ironic_settings.nil? %>
+api_endpoint = <%= @ironic_settings[:api_protocol] %>://<%= @ironic_settings[:public_host] %>:<%= @ironic_settings[:api_port] %>
+<% end -%>
 
 # Ironic keystone admin name (string value)
 #admin_username = <None>
+<% unless @ironic_settings.nil? %>
+admin_username = <%= @ironic_settings[:service_user] %>
+<% end -%>
 
 # Ironic keystone admin password. (string value)
 #admin_password = <None>
+<% unless @ironic_settings.nil? %>
+admin_password = <%= @ironic_settings[:service_password] %>
+<% end -%>
 
 # Ironic keystone auth token.DEPRECATED: use admin_username, admin_password,
 # and admin_tenant_name instead (string value)
@@ -2340,6 +2357,9 @@ protocol = <%= @glance_server_protocol %>
 
 # Keystone public API endpoint. (string value)
 #admin_url = <None>
+<% unless @ironic_settings.nil? %>
+admin_url = <%= @keystone_settings['protocol'] %>://<%= @keystone_settings['internal_url_host'] %>:<%= @keystone_settings['admin_port'] %>/<%= @ironic_settings[:keystone_version] %>/
+<% end -%>
 
 # Log level override for ironicclient. Set this in order to override the global
 # "default_log_levels", "verbose", and "debug" settings. DEPRECATED: use
@@ -2350,6 +2370,9 @@ protocol = <%= @glance_server_protocol %>
 
 # Ironic keystone tenant name. (string value)
 #admin_tenant_name = <None>
+<% unless @ironic_settings.nil? %>
+admin_tenant_name = <%= @keystone_settings['service_tenant'] %>
+<% end -%>
 
 # How many retries when a request does conflict. If <= 0, only try once, no
 # retries. (integer value)
