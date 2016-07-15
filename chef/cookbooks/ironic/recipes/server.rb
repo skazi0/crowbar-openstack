@@ -53,7 +53,7 @@ end
 
 keystone_settings = KeystoneHelper.keystone_settings(node, @cookbook_name)
 
-auth_version = 'v2.0'
+auth_version = "v2.0"
 
 glance = search(:node, "roles:glance-server").first
 glance_settings = { protocol: glance[:glance][:api][:protocol],
@@ -61,6 +61,7 @@ glance_settings = { protocol: glance[:glance][:api][:protocol],
                     port: glance[:glance][:api][:bind_port] }
 
 api_port = node[:ironic][:api][:port]
+api_protocol = node[:ironic][:api][:protocol]
 
 my_admin_host = CrowbarHelper.get_host_for_admin_url(node)
 my_public_host = CrowbarHelper.get_host_for_public_url(node, false)
@@ -92,8 +93,8 @@ keystone_register "register ironic service" do
   action :add_service
 end
 
-public_endpoint = "#{node[:ironic][:api][:protocol]}://#{my_public_host}:#{node[:ironic][:api][:port]}"
-admin_endpoint = "#{node[:ironic][:api][:protocol]}://#{my_admin_host}:#{node[:ironic][:api][:port]}"
+public_endpoint = "#{api_protocol}://#{my_public_host}:#{api_port}"
+admin_endpoint = "#{api_protocol}://#{my_admin_host}:#{api_port}"
 internal_endpoint = admin_endpoint
 
 keystone_register "register ironic endpoint" do
@@ -161,8 +162,7 @@ template "/etc/ironic/ironic.conf" do
     ironic_ip: node.ipaddress,
     public_endpoint: public_endpoint,
     api_port: api_port,
-    auth_version: auth_version,
-#    insecure: keystone_settings["insecure"]
+    auth_version: auth_version
   )
 end
 

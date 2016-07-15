@@ -20,7 +20,7 @@ class IronicService < ServiceObject
     @bc_name = "ironic"
   end
 
-# Turn off multi proposal support till it really works and people ask for it.
+  # Turn off multi proposal support till it really works and people ask for it.
   def self.allow_multiple_proposals?
     false
   end
@@ -42,11 +42,12 @@ class IronicService < ServiceObject
   end
 
   def proposal_dependencies(role)
+    ironic_attributes = role.default_attributes["ironic"]
     answer = []
-    answer << { "barclamp" => "rabbitmq", "inst" => role.default_attributes["ironic"]["rabbitmq_instance"] }
-    answer << { "barclamp" => "keystone", "inst" => role.default_attributes["ironic"]["keystone_instance"] }
-    answer << { "barclamp" => "glance", "inst" => role.default_attributes["ironic"]["glance_instance"] }
-    answer << { "barclamp" => "database", "inst" => role.default_attributes["ironic"]["database_instance"] }
+    answer << { "barclamp" => "rabbitmq", "inst" => ironic_attributes["rabbitmq_instance"] }
+    answer << { "barclamp" => "keystone", "inst" => ironic_attributes["keystone_instance"] }
+    answer << { "barclamp" => "glance", "inst" => ironic_attributes["glance_instance"] }
+    answer << { "barclamp" => "database", "inst" => ironic_attributes["database_instance"] }
     answer
   end
 
@@ -60,12 +61,12 @@ class IronicService < ServiceObject
     base["attributes"][@bc_name]["glance_instance"] = find_dep_proposal("glance")
 
     nodes = NodeObject.all
-    nodes.delete_if { |n| n.nil? or n.admin? }
+    nodes.delete_if { |n| n.nil? || n.admin? }
 
     if nodes.size >= 1
       controller = nodes.find { |n| n.intended_role == "controller" } || nodes.first
       base["deployment"]["ironic"]["elements"] = {
-        "ironic-server" =>  [controller.name]
+        "ironic-server" => [controller.name]
       }
     end
 

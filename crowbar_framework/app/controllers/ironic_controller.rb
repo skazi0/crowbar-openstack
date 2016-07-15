@@ -21,4 +21,3 @@ class IronicController < BarclampController
     @service_object = IronicService.new logger
   end
 end
-

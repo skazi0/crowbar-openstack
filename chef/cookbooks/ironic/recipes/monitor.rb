@@ -4,11 +4,11 @@ svcs = []
 ports = {}
 node[:ironic][:platform][:services].each { |svc| svcs << svc }
 node[:ironic][:api].each do |k, v|
-    next if k !~ /port*/
-    ports[k] = v
+  next if k !~ /port*/
+  ports[k] = v
 end
 
-log ("Will monitor ironic services: #{svcs.inspect}")
+log "Will monitor ironic services: #{svcs.inspect}"
 
 include_recipe "nagios::common"
 

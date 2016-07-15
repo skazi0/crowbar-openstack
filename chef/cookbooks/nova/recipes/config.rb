@@ -261,25 +261,27 @@ else
 end
 
 ironic_servers = search(:node, "roles:ironic-server") || []
-if ironic_servers.length > 0 && node["roles"].include?("nova-compute-ironic")
+if !ironic_servers.empty? && node["roles"].include?("nova-compute-ironic")
   use_baremetal_filters = true
   track_instance_changes = false
   override_force_config_drive = true
   ironic_node = ironic_servers.first
   ironic_settings = {}
+  ironic_settings[:keystone_version] = "v2.0"
   ironic_settings[:api_protocol] = ironic_node[:ironic][:api][:protocol]
   ironic_settings[:api_port] = ironic_node[:ironic][:api][:port]
   ironic_settings[:service_user] = ironic_node[:ironic][:service_user]
   ironic_settings[:service_password] = ironic_node[:ironic][:service_password]
-  ironic_settings[:public_host] = CrowbarHelper.get_host_for_public_url(ironic_node, ironic_settings[:api_protocol] == "https")
-  ironic_settings[:keystone_version] = "v2.0"
+  ironic_settings[:public_host] = CrowbarHelper.get_host_for_public_url(
+    ironic_node,
+    ironic_settings[:api_protocol] == "https"
+  )
 else
   use_baremetal_filters = false
   track_instance_changes = true
   override_force_config_drive = false
   ironic_settings = nil
 end
-
 
 vendordata_jsonfile = "/etc/nova/suse-vendor-data.json"
 
