@@ -69,6 +69,10 @@ search_env_filtered(:node, "roles:nova-compute-zvm") do |n|
   nova_scale[:computes] << n
 end
 
+search_env_filtered(:node, "roles:nova-compute-ironic") do |n|
+  nova_scale[:computes] << n
+end
+
 nova_admin_ip = Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, "admin").address
 template "/etc/nagios/nrpe.d/nova_nrpe.cfg" do
   source "nova_nrpe.cfg.erb"
