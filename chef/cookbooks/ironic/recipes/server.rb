@@ -60,6 +60,11 @@ glance_settings = { protocol: glance[:glance][:api][:protocol],
                     host: CrowbarHelper.get_host_for_admin_url(glance, glance[:glance][:ha][:enabled]),
                     port: glance[:glance][:api][:bind_port] }
 
+neutron = search(:node, "roles:neutron-server").first
+neutron_settings = { protocol: neutron[:neutron][:api][:protocol],
+                     host: CrowbarHelper.get_host_for_admin_url(neutron, neutron[:neutron][:ha][:server][:enabled]),
+                     port: neutron[:neutron][:api][:service_port] }
+
 api_port = node[:ironic][:api][:port]
 api_protocol = node[:ironic][:api][:protocol]
 
@@ -158,6 +163,7 @@ template "/etc/ironic/ironic.conf" do
     rabbit_settings: fetch_rabbitmq_settings,
     keystone_settings: keystone_settings,
     glance_settings: glance_settings,
+    neutron_settings: neutron_settings,
     database_connection: db_connection,
     ironic_ip: node.ipaddress,
     public_endpoint: public_endpoint,

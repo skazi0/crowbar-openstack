@@ -77,9 +77,11 @@ when "ml2"
   # For ml2 always create the floating network as a flat provider network
   # find the network node, to figure out the right "physnet" parameter
   network_node = NeutronHelper.get_network_node_from_neutron_attributes(node)
-  ext_physnet_map = NeutronHelper.get_neutron_physnets(network_node, ["nova_floating"])
+  ext_physnet_map = NeutronHelper.get_neutron_physnets(network_node, ["nova_floating", "ironic"])
   floating_network_type = "--provider:network_type flat " \
       "--provider:physical_network #{ext_physnet_map["nova_floating"]}"
+  ironic_network_type = "--provider:network_type flat " \
+      "--provider:physical_network #{ext_physnet_map["ironic"]}"
   case ml2_type_drivers_default_provider_network
   when "vlan"
     fixed_network_type = "--provider:network_type vlan " \
@@ -119,6 +121,14 @@ execute "create_floating_network" do
   action :nothing
 end
 
+execute "create_ironic_network" do
+  command "#{neutron_cmd} net-create ironic --shared #{ironic_network_type}"
+  not_if "out=$(#{neutron_cmd} net-list); [ $? != 0 ] || echo ${out} | grep -q ' ironic '"
+  retries 5
+  retry_delay 10
+  action :nothing
+end
+
 execute "create_fixed_subnet" do
   command "#{neutron_cmd} subnet-create --name fixed --allocation-pool start=#{fixed_pool_start},end=#{fixed_pool_end} fixed #{fixed_range}"
   not_if "out=$(#{neutron_cmd} subnet-list); [ $? != 0 ] || echo ${out} | grep -q ' fixed '"
@@ -130,6 +140,14 @@ end
 execute "create_floating_subnet" do
   command "#{neutron_cmd} subnet-create --name floating --allocation-pool start=#{floating_pool_start},end=#{floating_pool_end} --gateway #{floating_router} floating #{floating_range} --enable_dhcp False"
   not_if "out=$(#{neutron_cmd} subnet-list); [ $? != 0 ] || echo ${out} | grep -q ' floating '"
+  retries 5
+  retry_delay 10
+  action :nothing
+end
+
+execute "create_ironic_subnet" do
+  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} --gateway #{ironic_router} floating #{floating_range} --enable_dhcp"
+  not_if "out=$(#{neutron_cmd} subnet-list); [ $? != 0 ] || echo ${out} | grep -q ' ironic '"
   retries 5
   retry_delay 10
   action :nothing
@@ -159,6 +177,14 @@ execute "add_fixed_network_to_router" do
   action :nothing
 end
 
+execute "add_ironic_network_to_router" do
+  command "#{neutron_cmd} router-interface-add router-floating ironic"
+  not_if "out1=$(#{neutron_cmd} subnet-show -f shell ironic) ; rc1=$?; eval $out1 ; out2=$(#{neutron_cmd} router-port-list router-floating); [ $? != 0 ] || [ $rc1 != 0 ] || echo $out2 | grep -q $id"
+  retries 5
+  retry_delay 10
+  action :nothing
+end
+
 execute "Neutron network configuration" do
   command "#{neutron_cmd} net-list &>/dev/null"
   retries 5
@@ -166,11 +192,14 @@ execute "Neutron network configuration" do
   action :nothing
   notifies :run, "execute[create_fixed_network]", :delayed
   notifies :run, "execute[create_floating_network]", :delayed
+  notifies :run, "execute[create_ironic_network]", :delayed
   notifies :run, "execute[create_fixed_subnet]", :delayed
   notifies :run, "execute[create_floating_subnet]", :delayed
+  notifies :run, "execute[create_ironic_subnet]", :delayed
   notifies :run, "execute[create_router]", :delayed
   notifies :run, "execute[set_router_gateway]", :delayed
   notifies :run, "execute[add_fixed_network_to_router]", :delayed
+  notifies :run, "execute[add_ironic_network_to_router]", :delayed
 end
 
 # This is to trigger all the above "execute" resources to run :delayed, so that

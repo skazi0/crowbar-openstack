@@ -124,6 +124,11 @@ when "ml2"
   # with "nova_fixed".
   external_networks = ["nova_floating"]
 
+  # add ironic to external_networks if ironic-server role is on current node
+  if node.roles.include?("ironic-server")
+    external_networks << "ironic"
+  end
+
   external_networks.concat(node[:neutron][:additional_external_networks])
   network_node = NeutronHelper.get_network_node_from_neutron_attributes(node)
   physnet_map = NeutronHelper.get_neutron_physnets(network_node, external_networks)

@@ -1570,6 +1570,7 @@ admin_tenant_name=<%= @keystone_settings['service_tenant'] %>
 
 # URL for connecting to neutron. (string value)
 #url=http://$my_ip:9696
+url=<%= @neutron_settings[:protocol] %>://<%= @neutron_settings[:host] %>:<%= @neutron_settings[:port] %>
 
 # Timeout value for connecting to neutron in seconds. (integer
 # value)

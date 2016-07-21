@@ -12,7 +12,7 @@ type_drivers = <%= @ml2_type_drivers.join(",") %>,flat
 #
 # tenant_network_types = local
 # Example: tenant_network_types = vlan,gre,vxlan,geneve
-tenant_network_types = <%= @tenant_network_types.join(",") %>
+tenant_network_types = <%= @tenant_network_types.join(",") %>,flat
 
 # (ListOpt) Ordered list of networking mechanism driver entrypoints
 # to be loaded from the neutron.ml2.mechanism_drivers namespace.
