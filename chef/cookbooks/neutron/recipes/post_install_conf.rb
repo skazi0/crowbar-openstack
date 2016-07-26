@@ -151,7 +151,7 @@ execute "create_floating_subnet" do
 end
 
 execute "create_ironic_subnet" do
-  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} ironic #{ironic_range} --enable_dhcp"
+  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} --gateway #{floating_router} ironic #{ironic_range} --enable_dhcp"
   not_if "out=$(#{neutron_cmd} subnet-list); [ $? != 0 ] || echo ${out} | grep -q ' ironic '"
   retries 5
   retry_delay 10
