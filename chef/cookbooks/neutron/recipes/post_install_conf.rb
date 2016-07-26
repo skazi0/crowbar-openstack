@@ -47,6 +47,11 @@ end
 floating_pool_start = floating_net[:ranges][:host][:start]
 floating_pool_end = floating_net[:ranges][:host][:end]
 
+ironic_net = node[:network][:networks]["ironic"]
+ironic_range = "#{ironic_net["subnet"]}/#{mask_to_bits(ironic_net["netmask"])}"
+ironic_pool_start = ironic_net[:ranges][:host][:start]
+ironic_pool_end = ironic_net[:ranges][:host][:end]
+
 vni_start = [node[:neutron][:vxlan][:vni_start], 0].max
 
 keystone_settings = KeystoneHelper.keystone_settings(node, @cookbook_name)
@@ -146,7 +151,7 @@ execute "create_floating_subnet" do
 end
 
 execute "create_ironic_subnet" do
-  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} --gateway #{ironic_router} floating #{floating_range} --enable_dhcp"
+  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} --gateway #{ironic_router} ironic #{floating_range} --enable_dhcp"
   not_if "out=$(#{neutron_cmd} subnet-list); [ $? != 0 ] || echo ${out} | grep -q ' ironic '"
   retries 5
   retry_delay 10
