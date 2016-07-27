@@ -155,6 +155,14 @@ when "ml2"
     interface_driver = "neutron.agent.linux.interface.BridgeInterfaceDriver"
   end
 
+  network_vlan_ranges = "physnet1"
+  if ml2_type_drivers.include?("vlan")
+    network_vlan_ranges += ":" + vlan_start + ":" + vlan_end
+  end
+  if node.roles.include?("ironic-server")
+    network_vlan_ranges += ",physnet2"
+  end
+
   template plugin_cfg_path do
     source "ml2_conf.ini.erb"
     owner "root"
@@ -172,6 +180,7 @@ when "ml2"
       vxlan_end: vni_end,
       vxlan_mcast_group: node[:neutron][:vxlan][:multicast_group],
       external_networks: physnets,
+      network_vlan_ranges: network_vlan_ranges,
     )
   end
 when "vmware"
