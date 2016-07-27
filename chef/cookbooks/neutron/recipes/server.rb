@@ -157,7 +157,7 @@ when "ml2"
 
   network_vlan_ranges = "physnet1"
   if ml2_type_drivers.include?("vlan")
-    network_vlan_ranges += ":" + vlan_start + ":" + vlan_end
+    network_vlan_ranges += ":#{vlan_start}:#{vlan_end}"
   end
   if node.roles.include?("ironic-server")
     network_vlan_ranges += ",physnet2"
