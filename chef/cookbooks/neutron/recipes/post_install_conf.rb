@@ -51,6 +51,7 @@ ironic_net = node[:network][:networks]["ironic"]
 ironic_range = "#{ironic_net["subnet"]}/#{mask_to_bits(ironic_net["netmask"])}"
 ironic_pool_start = ironic_net[:ranges][:host][:start]
 ironic_pool_end = ironic_net[:ranges][:host][:end]
+ironic_router = ironic_net["router"]
 
 vni_start = [node[:neutron][:vxlan][:vni_start], 0].max
 
@@ -154,7 +155,7 @@ execute "create_floating_subnet" do
 end
 
 execute "create_ironic_subnet" do
-  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} --gateway #{floating_router} ironic #{ironic_range} --enable_dhcp"
+  command "#{neutron_cmd} subnet-create --name ironic --ip-version=4 --allocation-pool start=#{ironic_pool_start},end=#{ironic_pool_end} --gateway #{ironic_router} ironic #{ironic_range} --enable_dhcp"
   only_if { has_ironic }
   not_if "out=$(#{neutron_cmd} subnet-list); [ $? != 0 ] || echo ${out} | grep -q ' ironic '"
   retries 5
