@@ -90,6 +90,7 @@ class IronicService < ServiceObject
     net_svc = NetworkService.new @logger
     all_nodes.each do |n|
       net_svc.allocate_ip "default", "public", "host", n
+      net_svc.allocate_ip "default", "ironic", "host", n
     end
 
     @logger.debug("Ironic apply_role_pre_chef_call: leaving")
