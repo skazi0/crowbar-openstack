@@ -378,6 +378,7 @@ class NeutronService < PacemakerServiceObject
           node.save
         end
       end
+      node = NodeObject.find_node_by_name nodename
       if node.roles.include?("ironic-server")
         # skz: should we force use_vlan=false as above?
         net_svc.enable_interface "default", "ironic", nodename
