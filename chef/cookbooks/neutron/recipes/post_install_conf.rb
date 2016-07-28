@@ -49,8 +49,8 @@ floating_pool_end = floating_net[:ranges][:host][:end]
 
 ironic_net = node[:network][:networks]["ironic"]
 ironic_range = "#{ironic_net["subnet"]}/#{mask_to_bits(ironic_net["netmask"])}"
-ironic_pool_start = ironic_net[:ranges][:host][:start]
-ironic_pool_end = ironic_net[:ranges][:host][:end]
+ironic_pool_start = ironic_net[:ranges][:dhcp][:start]
+ironic_pool_end = ironic_net[:ranges][:dhcp][:end]
 ironic_router = ironic_net["router"]
 
 vni_start = [node[:neutron][:vxlan][:vni_start], 0].max
