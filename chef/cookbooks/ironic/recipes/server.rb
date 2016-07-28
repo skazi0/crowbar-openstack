@@ -51,6 +51,8 @@ node[:ironic][:platform][:packages].each do |p|
   package p
 end
 
+ironic_net_ip = Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, "ironic").address
+
 keystone_settings = KeystoneHelper.keystone_settings(node, @cookbook_name)
 
 auth_version = "v2.0"
@@ -166,6 +168,7 @@ template "/etc/ironic/ironic.conf" do
     neutron_settings: neutron_settings,
     database_connection: db_connection,
     ironic_ip: node.ipaddress,
+    tftp_ip: ironic_net_ip,
     public_endpoint: public_endpoint,
     api_port: api_port,
     auth_version: auth_version
