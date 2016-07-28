@@ -10,6 +10,7 @@
       "database_instance": "none",
       "glance_instance": "none",
       "keystone_instance": "none",
+      "neutron_instance": "none",
       "service_user": "ironic",
       "service_password": "",
       "api": {

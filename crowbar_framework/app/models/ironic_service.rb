@@ -48,6 +48,7 @@ class IronicService < ServiceObject
     answer << { "barclamp" => "keystone", "inst" => ironic_attributes["keystone_instance"] }
     answer << { "barclamp" => "glance", "inst" => ironic_attributes["glance_instance"] }
     answer << { "barclamp" => "database", "inst" => ironic_attributes["database_instance"] }
+    answer << { "barclamp" => "neutron", "inst" => ironic_attributes["neutron_instance"] }
     answer
   end
 
