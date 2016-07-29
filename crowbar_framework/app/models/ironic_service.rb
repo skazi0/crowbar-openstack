@@ -60,6 +60,7 @@ class IronicService < ServiceObject
     base["attributes"][@bc_name]["rabbitmq_instance"] = find_dep_proposal("rabbitmq")
     base["attributes"][@bc_name]["keystone_instance"] = find_dep_proposal("keystone")
     base["attributes"][@bc_name]["glance_instance"] = find_dep_proposal("glance")
+    base["attributes"][@bc_name]["neutron_instance"] = find_dep_proposal("neutron")
 
     nodes = NodeObject.all
     nodes.delete_if { |n| n.nil? || n.admin? }
