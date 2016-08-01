@@ -2340,7 +2340,7 @@ api_endpoint = <%= @ironic_settings[:api_protocol] %>://<%= @ironic_settings[:pu
 # Ironic keystone admin name (string value)
 #admin_username = <None>
 <% unless @ironic_settings.nil? %>
-api_username = <%= @ironic_settings[:service_user] %>
+admin_username = <%= @ironic_settings[:service_user] %>
 <% end -%>
 
 # Ironic keystone admin password. (string value)
