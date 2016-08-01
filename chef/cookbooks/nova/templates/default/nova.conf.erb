@@ -2346,7 +2346,7 @@ admin_username = <%= @ironic_settings[:service_user] %>
 # Ironic keystone admin password. (string value)
 #admin_password = <None>
 <% unless @ironic_settings.nil? %>
-api_password = <%= @ironic_settings[:service_password] %>
+admin_password = <%= @ironic_settings[:service_password] %>
 <% end -%>
 
 # Ironic keystone auth token.DEPRECATED: use admin_username, admin_password,
