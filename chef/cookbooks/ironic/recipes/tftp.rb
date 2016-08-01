@@ -77,5 +77,5 @@ template "/etc/xinetd.d/tftp" do
   owner "root"
   group "root"
   mode "0644"
-  variables(tftproot: tftproot, ironic_ip: ironic_ip, map_file: mapfile)
+  variables(tftproot: tftproot, ironic_ip: ironic_ip, map_file: map_file)
 end
