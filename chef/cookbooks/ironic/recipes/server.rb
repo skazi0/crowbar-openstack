@@ -154,6 +154,20 @@ keystone_register "give ironic user _member_ role in service tenant" do
   action :add_access
 end
 
+insecure = keystone_settings["insecure"] ? "--insecure" : ""
+auth_url = "#{keystone_settings["protocol"]}://"\
+           "#{keystone_settings["internal_url_host"]}:"\
+           "#{keystone_settings["service_port"]}/v3"
+
+openstack_command = "openstack --os-username #{keystone_settings["admin_user"]}"
+openstack_command << " --os-auth-type password --os-identity-api-version 3"
+openstack_command << " --os-password #{keystone_settings["admin_password"]}"
+openstack_command << " --os-tenant-name #{keystone_settings["admin_tenant"]}"
+openstack_command << " --os-auth-url #{auth_url} #{insecure}"
+
+get_ironic_net_id = "#{openstack_command} network show ironic -f value -c id"
+ironic_net_id = Mixlib::ShellOut.new(get_ironic_net_id).run_command.stdout.chomp
+
 template "/etc/ironic/ironic.conf" do
   source "ironic.conf.erb"
   owner "root"
@@ -167,6 +181,7 @@ template "/etc/ironic/ironic.conf" do
     glance_settings: glance_settings,
     neutron_settings: neutron_settings,
     database_connection: db_connection,
+    ironic_net_id: ironic_net_id,
     ironic_ip: node.ipaddress,
     tftp_ip: ironic_net_ip,
     public_endpoint: public_endpoint,

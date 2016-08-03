@@ -20,7 +20,8 @@ when "rhel", "suse"
       "openstack-ironic",
       "openstack-ironic-api",
       "openstack-ironic-conductor",
-      "python-ironicclient"
+      "python-ironicclient",
+      "python-openstackclient"
     ],
     services: [
       "openstack-ironic-api",
@@ -35,7 +36,8 @@ when "debian"
     packages: [
       "ironic-api",
       "ironic-conductor",
-      "python-ironicclient"
+      "python-ironicclient",
+      "python-openstackclient"
     ],
     services: [
       "ironic-api",

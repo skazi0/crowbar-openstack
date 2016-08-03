@@ -1590,6 +1590,9 @@ auth_strategy=keystone
 # UUID of the network to create Neutron ports on, when booting
 # to a ramdisk for cleaning using Neutron DHCP. (string value)
 #cleaning_network_uuid=<None>
+<% unless @ironic_net_id.nil? %>
+cleaning_network_uuid=<%= @ironic_net_id %>
+<% end %>
 
 
 [oneview]
