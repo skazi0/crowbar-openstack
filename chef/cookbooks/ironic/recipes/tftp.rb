@@ -18,6 +18,8 @@ ironic_ip = Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, "ironic"
 tftproot = "/tftpboot"
 map_file = "#{tftproot}/map-file"
 
+include_recipe "bluepill"
+
 case node[:platform_family]
 when "debian"
   package "tftpd-hpa"
@@ -39,6 +41,8 @@ directory tftproot do
   recursive true
 end
 
+package "syslinux"
+
 ["pxelinux.0", "chain.c32"].each do |f|
   ["share", "lib"].each do |d|
     next unless ::File.exist?("/usr/#{d}/syslinux/#{f}")
@@ -59,6 +63,7 @@ template map_file do
 end
 
 # TODO: use systemd where available
+# TODO: if not, make sure xinetd gets restarted after config changes
 
 service "tftp" do
   # just enable, don't start (xinetd takes care of it)
