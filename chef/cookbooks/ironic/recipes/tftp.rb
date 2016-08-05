@@ -72,7 +72,7 @@ if node[:platform_family] == "suse"
   service "tftp.service" do
     if node[:provisioner][:enable_pxe]
       action ["enable", "start"]
-      subscribes :restart, resources("cookbook_file[/etc/tftpd.conf]")
+      subscribes :restart, resources("template[#{map_file}]")
       subscribes :restart, resources("template[/etc/systemd/system/tftp.service]")
     else
       action ["disable", "stop"]
