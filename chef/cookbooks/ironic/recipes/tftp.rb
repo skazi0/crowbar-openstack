@@ -18,8 +18,6 @@ ironic_ip = Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, "ironic"
 tftproot = "/tftpboot"
 map_file = "#{tftproot}/map-file"
 
-include_recipe "bluepill"
-
 case node[:platform_family]
 when "debian"
   package "tftpd-hpa"
