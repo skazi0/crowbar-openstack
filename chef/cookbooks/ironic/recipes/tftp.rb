@@ -60,25 +60,31 @@ template map_file do
   variables(tftproot: tftproot)
 end
 
-# TODO: use systemd where available
-# TODO: if not, make sure xinetd gets restarted after config changes
+if node[:platform_family] == "suse"
+  template "/etc/systemd/system/tftp.service" do
+    source "tftp.service.erb"
+    owner "root"
+    group "root"
+    mode "0644"
+    variables(tftproot: tftproot, ironic_ip: ironic_ip, map_file: map_file)
+  end
 
-service "tftp" do
-  # just enable, don't start (xinetd takes care of it)
-  enabled true
-  action "enable"
+  service "tftp.service" do
+    if node[:provisioner][:enable_pxe]
+      action ["enable", "start"]
+      subscribes :restart, resources("cookbook_file[/etc/tftpd.conf]")
+      subscribes :restart, resources("template[/etc/systemd/system/tftp.service]")
+    else
+      action ["disable", "stop"]
+    end
+  end
+
+  bash "reload systemd after tftp.service update" do
+    code "systemctl daemon-reload"
+    action :nothing
+    subscribes :run, resources(template: "/etc/systemd/system/tftp.service"), :immediately
+  end
+else
+  # TODO: support other platforms
 end
 
-service "xinetd" do
-  action ["enable", "start"]
-  supports reload: true
-  subscribes :reload, resources(service: "tftp"), :immediately
-end
-
-template "/etc/xinetd.d/tftp" do
-  source "tftp.erb"
-  owner "root"
-  group "root"
-  mode "0644"
-  variables(tftproot: tftproot, ironic_ip: ironic_ip, map_file: map_file)
-end
