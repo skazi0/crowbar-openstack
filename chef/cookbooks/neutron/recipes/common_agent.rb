@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+require 'set'
 
 neutron = nil
 if node.attribute?(:cookbook) and node[:cookbook] == "nova"
@@ -147,14 +148,14 @@ if neutron[:neutron][:networking_plugin] == "ml2"
         bridge_mappings += ", "
         bridge_mappings += neutron[:neutron][:additional_external_networks].collect { |n| n + ":" + "br-" + n }.join ","
       end
-      if node.roles.include?("ironic-server")
-        bridge_mappings += ","
-        bridge_mappings += "physnet2:br-ironic"
-      end
     end
     if ml2_type_drivers.include?("vlan")
       bridge_mappings += ", " unless bridge_mappings.empty?
       bridge_mappings += "physnet1:br-fixed"
+    end
+    if node.roles.to_set.intersect?(["ironic-server", "nova-compute-ironic"].to_set)
+      bridge_mappings += "," unless bridge_mappings.empty?
+      bridge_mappings += "physnet2:br-ironic"
     end
   when ml2_mech_drivers.include?("linuxbridge")
     package node[:neutron][:platform][:lb_agent_pkg]

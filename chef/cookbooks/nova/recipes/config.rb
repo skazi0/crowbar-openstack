@@ -18,6 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+require 'set'
 
 node.set[:nova][:my_ip] = Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, "admin").address
 
@@ -258,7 +259,8 @@ else
 end
 
 ironic_servers = search(:node, "roles:ironic-server") || []
-if !ironic_servers.empty? && node["roles"].include?("nova-compute-ironic")
+if !ironic_servers.empty? && \
+   node["roles"].to_set.intersect?(["nova-compute-ironic", "nova-controller"].to_set)
   use_baremetal_filters = true
   track_instance_changes = false
   override_force_config_drive = true

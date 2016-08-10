@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+require "set"
 require "ipaddr"
 
 class NeutronService < PacemakerServiceObject
@@ -379,7 +380,7 @@ class NeutronService < PacemakerServiceObject
         end
       end
       node = NodeObject.find_node_by_name nodename
-      if node.roles.include?("ironic-server")
+      if node.roles.to_set.intersect?(["ironic-server", "nova-compute-ironic"].to_set)
         # skz: should we force use_vlan=false as above?
         net_svc.enable_interface "default", "ironic", nodename
         node = NodeObject.find_node_by_name nodename

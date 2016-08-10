@@ -315,6 +315,15 @@ class NovaService < PacemakerServiceObject
                                               neutron["attributes"]["neutron"]["use_dvr"])
     end unless all_nodes.nil?
 
+    ironic_elements, ironic_nodes, ironic_ha_enabled = role_expand_elements(role, "nova-compute-ironic")
+    ironic_nodes.each do |n|
+      net_svc.allocate_ip "default", "ironic", "admin", n
+      # (re)enable bridge for ironic network
+      node = NodeObject.find_node_by_name n
+      node.crowbar["crowbar"]["network"]["ironic"]["add_ovs_bridge"] = true
+      node.save
+    end
+
     @logger.debug("Nova apply_role_pre_chef_call: leaving")
   end
 
