@@ -22,6 +22,12 @@ package "openstack-monasca-api"
 monasca_servers = search(:node, "roles:monasca-server")
 monasca_net_ip = MonascaHelper.get_host_for_monitoring_url(monasca_servers[0])
 
+db_settings = fetch_database_settings
+db_host = db_settings[:address]
+
+mondb_user = node[:monasca][:db_monapi][:user]
+mondb_password = node[:monasca][:db_monapi][:password]
+
 keystone_settings = KeystoneHelper.keystone_settings(node, @cookbook_name)
 
 memcached_servers = MemcachedHelper.get_memcached_servers(
@@ -52,6 +58,25 @@ template "/etc/monasca/api.conf" do
     sql_connection: sql_connection,
     tsdb: tsdb
   )
+end
+
+# When upgrading from Cloud 8, restore the Monasca database dumped from the
+# Monasca node and stamp it with Alembic revision information.
+if node["crowbar_upgrade_step"] == "done_os_upgrade"
+  execute "restore Monasca DB" do
+    command "/usr/bin/zcat /var/lib/crowbar/upgrade/monasca-metrics-database.dump.gz"\
+             " | /usr/bin/mysql -h #{db_host} -u #{mondb_user} \"-p#{mondb_password}\""
+    not_if "monasca_db version" # If DB is stamped with an Alembic version, this already happened.
+    action :run
+    notifies :run, "execute[stamp monasca DB]", :immediately
+  end
+
+  execute "stamp Monasca DB" do
+    command "/usr/bin/monasca_db stamp"
+    not_if "monasca_db version" # Not needed if the DB is stamped already.
+    action :run
+    notifies :run, "execute[apply mon database schema migration]", :immediately
+  end
 end
 
 execute "apply mon database schema migration" do

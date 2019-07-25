@@ -20,6 +20,7 @@ if monasca_server.nil?
 end
 grafana_password = monasca_server[:monasca][:db_grafana][:password]
 db_settings = fetch_database_settings
+db_host = db_settings[:address]
 
 # Used for creating data source
 grafana_base_url = ::File.join(MonascaUiHelper.dashboard_local_url(node), "/grafana")
@@ -78,6 +79,25 @@ database_user "grant privileges to the #{grafana_db[:user]} database user" do
   require_ssl db_settings[:connection][:ssl][:enabled]
   action :grant
   only_if { !ha_enabled || CrowbarPacemakerHelper.is_cluster_founder?(node) }
+end
+
+# When upgrading from Cloud 8, restore the Monasca database dumped from the
+# Monasca node and stamp it with Alembic revision information. We stop
+# grafana-server as part of this to make sure there's no concurrent write
+# access to the DB.
+if node["crowbar_upgrade_step"] == "done_os_upgrade"
+  execute "restore Grafana DB" do
+    command  "/usr/bin/systemctl stop grafana-server; "\
+             " /usr/bin/zcat /var/lib/crowbar/upgrade/monasca-grafana-database.dump.gz"\
+             " | /usr/bin/mysql"\
+             "     -h #{db_host}"\
+             "     -u #{grafana_db[:user]}"\
+             "   \"-p#{grafana_db[:password]}\""\
+             " && touch /var/lib/crowbar/upgrade/grafana_db_restored"
+    not_if { File.exist?("/var/lib/crowbar/upgrade/grafana_db_restored") }
+    action :run
+    notifies :start, resources(service: "grafana-server")
+  end
 end
 
 template "/etc/grafana/grafana.ini" do
