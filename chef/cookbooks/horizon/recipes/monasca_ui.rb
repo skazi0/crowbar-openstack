@@ -96,7 +96,6 @@ if node["crowbar_upgrade_step"] == "done_os_upgrade"
              " && touch /var/lib/crowbar/upgrade/grafana_db_restored"
     not_if { File.exist?("/var/lib/crowbar/upgrade/grafana_db_restored") }
     action :run
-    notifies :start, resources(service: "grafana-server")
   end
 end
 
