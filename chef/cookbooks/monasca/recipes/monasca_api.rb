@@ -27,6 +27,7 @@ db_host = db_settings[:address]
 
 mondb_user = node[:monasca][:db_monapi][:user]
 mondb_password = node[:monasca][:db_monapi][:password]
+mondb_database = node[:monasca][:db_monapi][:database]
 
 keystone_settings = KeystoneHelper.keystone_settings(node, @cookbook_name)
 
@@ -64,15 +65,16 @@ end
 # Monasca node and stamp it with Alembic revision information.
 if node["crowbar_upgrade_step"] == "done_os_upgrade"
   execute "restore Monasca DB" do
-    command "/usr/bin/zcat /var/lib/crowbar/upgrade/monasca-metrics-database.dump.gz"\
-             " | /usr/bin/mysql -h #{db_host} -u #{mondb_user} \"-p#{mondb_password}\""
+    command "/usr/bin/zcat /var/lib/crowbar/upgrade/monasca-mon-database.dump.gz"\
+             " | /usr/bin/mysql -h #{db_host} -u #{mondb_user} \"-p#{mondb_password}\""\
+             "   #{mondb_database}"
     not_if "monasca_db version" # If DB is stamped with an Alembic version, this already happened.
     action :run
-    notifies :run, "execute[stamp monasca DB]", :immediately
+    notifies :run, "execute[stamp Monasca DB]", :immediately
   end
 
   execute "stamp Monasca DB" do
-    command "/usr/bin/monasca_db stamp"
+    command "/usr/bin/monasca_db stamp --from-fingerprint"
     not_if "monasca_db version" # Not needed if the DB is stamped already.
     action :run
     notifies :run, "execute[apply mon database schema migration]", :immediately

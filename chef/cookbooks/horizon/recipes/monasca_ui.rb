@@ -92,7 +92,8 @@ if node["crowbar_upgrade_step"] == "done_os_upgrade"
              " | /usr/bin/mysql"\
              "     -h #{db_host}"\
              "     -u #{grafana_db[:user]}"\
-             "   \"-p#{grafana_db[:password]}\""\
+             "     \"-p#{grafana_db[:password]}\""\
+             "     #{grafana_db[:database]}"\
              " && touch /var/lib/crowbar/upgrade/grafana_db_restored"
     not_if { File.exist?("/var/lib/crowbar/upgrade/grafana_db_restored") }
     action :run
